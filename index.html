@@ -1,0 +1,548 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Cat Care Tracker</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="manifest" href="manifest.json">
+    <meta name="theme-color" content="#3b82f6">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="default">
+    <meta name="apple-mobile-web-app-title" content="Cat Tracker">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        * {
+            font-family: 'Inter', sans-serif;
+        }
+        
+        body {
+            margin: 0;
+            background-color: #f8fafc;
+        }
+        
+        .card {
+            background: white;
+            border: 1px solid #e2e8f0;
+            border-radius: 12px;
+            box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1), 0 1px 2px 0 rgba(0, 0, 0, 0.06);
+            transition: all 0.2s ease;
+        }
+        
+        .card:hover {
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+        }
+        
+        .btn {
+            border-radius: 8px;
+            font-weight: 500;
+            transition: all 0.2s ease;
+            border: none;
+            cursor: pointer;
+            padding: 12px 16px;
+            text-align: center;
+        }
+        
+        .btn-pending {
+            background-color: #3b82f6;
+            color: white;
+        }
+        
+        .btn-pending:hover {
+            background-color: #2563eb;
+            transform: translateY(-1px);
+        }
+        
+        .btn-completed {
+            background-color: #10b981;
+            color: white;
+        }
+        
+        .btn-medication {
+            background-color: #8b5cf6;
+            color: white;
+        }
+        
+        .btn-medication:hover {
+            background-color: #7c3aed;
+            transform: translateY(-1px);
+        }
+        
+        .btn-due {
+            background-color: #f59e0b;
+            color: white;
+            box-shadow: 0 0 0 2px #fbbf24;
+        }
+        
+        .btn-due:hover {
+            background-color: #d97706;
+            transform: translateY(-1px);
+        }
+        
+        .btn-disabled {
+            background-color: #f1f5f9;
+            color: #64748b;
+            cursor: not-allowed;
+        }
+        
+        .tab-active {
+            background-color: #3b82f6;
+            color: white;
+        }
+        
+        .tab-inactive {
+            background-color: #f1f5f9;
+            color: #64748b;
+        }
+        
+        .tab-inactive:hover {
+            background-color: #e2e8f0;
+            color: #475569;
+        }
+        
+        .activity-item {
+            background-color: #f8fafc;
+            border: 1px solid #e2e8f0;
+            border-radius: 8px;
+            transition: all 0.2s ease;
+        }
+        
+        .activity-item:hover {
+            background-color: #f1f5f9;
+        }
+        
+        .section-header {
+            color: #1e293b;
+            font-weight: 600;
+            margin-bottom: 16px;
+        }
+        
+        .cat-header {
+            color: #1e293b;
+            font-weight: 700;
+            border-bottom: 3px solid #e2e8f0;
+            padding-bottom: 12px;
+            margin-bottom: 24px;
+        }
+        
+        .food-section {
+            margin-bottom: 32px;
+        }
+        
+        .food-title {
+            color: #475569;
+            font-weight: 600;
+            margin-bottom: 12px;
+            font-size: 14px;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+    </style>
+</head>
+<body>
+    <div id="app" class="min-h-screen bg-gray-50">
+        <!-- Header -->
+        <div class="bg-white border-b border-gray-200">
+            <div class="max-w-4xl mx-auto px-6 py-8">
+                <div class="text-center">
+                    <h1 class="text-3xl font-bold text-gray-900 mb-2">Cat Care Tracker</h1>
+                    <p class="text-gray-600 mb-6">Daily care for Jolly, Zuko & Sherbet</p>
+                    <div class="inline-flex items-center bg-gray-50 rounded-lg px-4 py-2 border border-gray-200">
+                        <span class="mr-3 text-gray-500">📅</span>
+                        <input type="date" id="dateInput" class="bg-transparent text-gray-700 border-none outline-none font-medium">
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Content -->
+        <div class="max-w-4xl mx-auto px-6 py-8">
+            <!-- Navigation -->
+            <div class="card p-2 mb-8">
+                <div class="flex gap-2">
+                    <button id="todayTab" class="flex-1 py-3 px-4 text-center font-medium rounded-lg tab-active transition-all">
+                        Today's Tasks
+                    </button>
+                    <button id="historyTab" class="flex-1 py-3 px-4 text-center font-medium rounded-lg tab-inactive transition-all">
+                        History
+                    </button>
+                </div>
+            </div>
+
+            <!-- Today's Tasks Tab -->
+            <div id="todayContent">
+                <!-- Jolly & Zuko Card -->
+                <div class="card p-8 mb-8">
+                    <h2 class="text-2xl cat-header flex items-center">
+                        <span class="mr-3 text-2xl">🐱</span>
+                        Jolly & Zuko
+                    </h2>
+                    
+                    <!-- Wet Food -->
+                    <div class="food-section">
+                        <h3 class="food-title flex items-center">
+                            <span class="mr-2">🥫</span>
+                            Wet Food (1 can split between them)
+                        </h3>
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <button id="regular-wet-morning" class="btn btn-pending">
+                                ☀️ Morning Feeding
+                            </button>
+                            <button id="regular-wet-evening" class="btn btn-pending">
+                                🌙 Evening Feeding
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Dry Food -->
+                    <div class="food-section">
+                        <h3 class="food-title flex items-center">
+                            <span class="mr-2">🌾</span>
+                            Dry Food (1/8 cup each cat)
+                        </h3>
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <button id="regular-dry-morning" class="btn btn-pending">
+                                ☀️ Morning Portion
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Sherbet Card -->
+                <div class="card p-8 mb-8">
+                    <h2 class="text-2xl cat-header flex items-center">
+                        <span class="mr-3 text-2xl">🍊</span>
+                        Sherbet (Special Care)
+                    </h2>
+                    
+                    <!-- Wet Food -->
+                    <div class="food-section">
+                        <h3 class="food-title flex items-center">
+                            <span class="mr-2">🥫</span>
+                            Prescription Wet Food (1/2 can per feeding)
+                        </h3>
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <button id="sherbet-wet-morning" class="btn btn-pending">
+                                ☀️ Morning Feeding
+                            </button>
+                            <button id="sherbet-wet-evening" class="btn btn-pending">
+                                🌙 Evening Feeding
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Dry Food -->
+                    <div class="food-section">
+                        <h3 class="food-title flex items-center">
+                            <span class="mr-2">🌾</span>
+                            Prescription Dry Food (1/8 cup)
+                        </h3>
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <button id="sherbet-dry-morning" class="btn btn-pending">
+                                ☀️ Morning Portion
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Medications -->
+                    <div class="food-section">
+                        <h3 class="food-title flex items-center">
+                            <span class="mr-2">💊</span>
+                            Medications
+                        </h3>
+                        <div class="space-y-4">
+                            <button id="sherbet-prednisone" class="btn btn-due w-full">
+                                💊 Prednisone (Every other day)
+                            </button>
+                            <button id="sherbet-gabapentin" class="btn btn-medication w-full">
+                                💊 Gabapentin (As needed for anxiety)
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Today's Activity -->
+                <div class="card p-8">
+                    <h2 class="text-xl section-header flex items-center">
+                        <span class="mr-3">📋</span>
+                        Today's Activity Log
+                    </h2>
+                    <div id="todayLogs" class="space-y-3">
+                        <p class="text-gray-500 text-center py-12 italic">No activities logged today</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- History Tab -->
+            <div id="historyContent" class="hidden">
+                <div class="card p-8">
+                    <h2 class="text-xl section-header flex items-center">
+                        <span class="mr-3">📊</span>
+                        Care History
+                    </h2>
+                    <div id="historyLogs" class="space-y-6">
+                        <p class="text-gray-500 text-center py-12 italic">No history yet</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // State management
+        let currentDate = new Date().toISOString().split('T')[0];
+        let logs = JSON.parse(localStorage.getItem('catTrackerLogs') || '[]');
+        let activeTab = 'today';
+
+        // Initialize
+        document.getElementById('dateInput').value = currentDate;
+        
+        // Save logs to localStorage
+        function saveLogs() {
+            localStorage.setItem('catTrackerLogs', JSON.stringify(logs));
+        }
+
+        // Get today's logs
+        function getTodaysLogs() {
+            return logs.filter(log => log.date === currentDate);
+        }
+
+        // Check if task is completed
+        function isCompleted(catGroup, foodType, time, medication = null) {
+            const todaysLogs = getTodaysLogs();
+            return todaysLogs.some(log => 
+                log.catGroup === catGroup && 
+                log.type === (medication ? 'medication' : 'feeding') &&
+                (medication ? log.medication === medication : (log.foodType === foodType && log.time === time))
+            );
+        }
+
+        // Add log entry
+        function addLog(catGroup, type, details) {
+            const newLog = {
+                id: Date.now(),
+                date: currentDate,
+                timestamp: new Date().toLocaleTimeString(),
+                catGroup,
+                type,
+                ...details
+            };
+            logs.push(newLog);
+            saveLogs();
+            updateUI();
+        }
+
+        // Check if prednisone is due
+        function needsPredToday() {
+            const lastPred = logs.filter(log => 
+                log.catGroup === 'sherbet' && 
+                log.type === 'medication' && 
+                log.medication === 'prednisone'
+            ).sort((a, b) => new Date(b.date) - new Date(a.date))[0];
+
+            if (!lastPred) return true;
+            
+            const daysSince = Math.floor((new Date(currentDate) - new Date(lastPred.date)) / (1000 * 60 * 60 * 24));
+            return daysSince >= 2;
+        }
+
+        // Update button states
+        function updateButtons() {
+            // Regular cats - wet food
+            const regularWetMorning = document.getElementById('regular-wet-morning');
+            const regularWetEvening = document.getElementById('regular-wet-evening');
+            
+            if (isCompleted('regular', 'wet', 'Morning')) {
+                regularWetMorning.className = 'btn btn-completed';
+                regularWetMorning.innerHTML = '✅ Morning Complete';
+            } else {
+                regularWetMorning.className = 'btn btn-pending';
+                regularWetMorning.innerHTML = '☀️ Morning Feeding';
+            }
+
+            if (isCompleted('regular', 'wet', 'Evening')) {
+                regularWetEvening.className = 'btn btn-completed';
+                regularWetEvening.innerHTML = '✅ Evening Complete';
+            } else {
+                regularWetEvening.className = 'btn btn-pending';
+                regularWetEvening.innerHTML = '🌙 Evening Feeding';
+            }
+
+            // Regular cats - dry food
+            const regularDryMorning = document.getElementById('regular-dry-morning');
+            if (isCompleted('regular', 'dry', 'Morning')) {
+                regularDryMorning.className = 'btn btn-completed';
+                regularDryMorning.innerHTML = '✅ Morning Complete';
+            } else {
+                regularDryMorning.className = 'btn btn-pending';
+                regularDryMorning.innerHTML = '☀️ Morning Portion';
+            }
+
+            // Sherbet - wet food
+            const sherbetWetMorning = document.getElementById('sherbet-wet-morning');
+            const sherbetWetEvening = document.getElementById('sherbet-wet-evening');
+            
+            if (isCompleted('sherbet', 'wet', 'Morning')) {
+                sherbetWetMorning.className = 'btn btn-completed';
+                sherbetWetMorning.innerHTML = '✅ Morning Complete';
+            } else {
+                sherbetWetMorning.className = 'btn btn-pending';
+                sherbetWetMorning.innerHTML = '☀️ Morning Feeding';
+            }
+
+            if (isCompleted('sherbet', 'wet', 'Evening')) {
+                sherbetWetEvening.className = 'btn btn-completed';
+                sherbetWetEvening.innerHTML = '✅ Evening Complete';
+            } else {
+                sherbetWetEvening.className = 'btn btn-pending';
+                sherbetWetEvening.innerHTML = '🌙 Evening Feeding';
+            }
+
+            // Sherbet - dry food
+            const sherbetDryMorning = document.getElementById('sherbet-dry-morning');
+            if (isCompleted('sherbet', 'dry', 'Morning')) {
+                sherbetDryMorning.className = 'btn btn-completed';
+                sherbetDryMorning.innerHTML = '✅ Morning Complete';
+            } else {
+                sherbetDryMorning.className = 'btn btn-pending';
+                sherbetDryMorning.innerHTML = '☀️ Morning Portion';
+            }
+
+            // Sherbet - medications
+            const sherbetPred = document.getElementById('sherbet-prednisone');
+            if (isCompleted('sherbet', null, null, 'prednisone')) {
+                sherbetPred.className = 'btn btn-completed w-full';
+                sherbetPred.innerHTML = '✅ Prednisone Given Today';
+            } else if (needsPredToday()) {
+                sherbetPred.className = 'btn btn-due w-full';
+                sherbetPred.innerHTML = '⚠️ Give Prednisone Today';
+                sherbetPred.disabled = false;
+            } else {
+                sherbetPred.className = 'btn btn-disabled w-full';
+                sherbetPred.innerHTML = '💊 Prednisone (Not due today)';
+                sherbetPred.disabled = true;
+            }
+        }
+
+        // Update today's logs display
+        function updateTodaysLogs() {
+            const todaysLogs = getTodaysLogs().sort((a, b) => new Date(`1970/01/01 ${b.timestamp}`) - new Date(`1970/01/01 ${a.timestamp}`));
+            const container = document.getElementById('todayLogs');
+            
+            if (todaysLogs.length === 0) {
+                container.innerHTML = '<p class="text-gray-500 text-center py-12 italic">No activities logged today</p>';
+            } else {
+                container.innerHTML = todaysLogs.map(log => `
+                    <div class="activity-item flex justify-between items-center p-4">
+                        <div class="flex items-center">
+                            <span class="mr-3 text-lg">
+                                ${log.type === 'feeding' 
+                                    ? (log.foodType === 'wet' ? '🥫' : '🌾')
+                                    : '💊'}
+                            </span>
+                            <span class="font-medium text-gray-900">
+                                ${log.type === 'feeding' 
+                                    ? `${log.catGroup === 'regular' ? 'Jolly & Zuko' : 'Sherbet'} - ${log.foodType} food (${log.time})`
+                                    : `Sherbet - ${log.medication}`}
+                            </span>
+                        </div>
+                        <span class="text-sm text-gray-500 bg-gray-100 px-3 py-1 rounded-full">${log.timestamp}</span>
+                    </div>
+                `).join('');
+            }
+        }
+
+        // Update history display
+        function updateHistory() {
+            const container = document.getElementById('historyLogs');
+            
+            if (logs.length === 0) {
+                container.innerHTML = '<p class="text-gray-500 text-center py-12 italic">No history yet</p>';
+            } else {
+                const groupedLogs = logs.reduce((acc, log) => {
+                    if (!acc[log.date]) acc[log.date] = [];
+                    acc[log.date].push(log);
+                    return acc;
+                }, {});
+
+                const sortedDates = Object.keys(groupedLogs).sort((a, b) => new Date(b) - new Date(a));
+                
+                container.innerHTML = sortedDates.map(date => `
+                    <div class="border-l-4 border-blue-500 pl-6 py-4">
+                        <h3 class="font-semibold text-lg text-gray-900 mb-4">
+                            ${new Date(date).toLocaleDateString('en-US', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })}
+                        </h3>
+                        <div class="space-y-3">
+                            ${groupedLogs[date].map(log => `
+                                <div class="bg-gray-50 p-4 rounded-lg border border-gray-200">
+                                    <div class="flex items-center">
+                                        <span class="mr-3 text-lg">
+                                            ${log.type === 'feeding' 
+                                                ? (log.foodType === 'wet' ? '🥫' : '🌾')
+                                                : '💊'}
+                                        </span>
+                                        <span class="font-medium text-gray-900 flex-1">
+                                            ${log.type === 'feeding' 
+                                                ? `${log.catGroup === 'regular' ? 'Jolly & Zuko' : 'Sherbet'} - ${log.foodType} food (${log.time})`
+                                                : `Sherbet - ${log.medication}`}
+                                        </span>
+                                        <span class="text-sm text-gray-500">${log.timestamp}</span>
+                                    </div>
+                                </div>
+                            `).join('')}
+                        </div>
+                    </div>
+                `).join('');
+            }
+        }
+
+        // Update UI
+        function updateUI() {
+            updateButtons();
+            updateTodaysLogs();
+            updateHistory();
+        }
+
+        // Event listeners
+        document.getElementById('dateInput').addEventListener('change', function(e) {
+            currentDate = e.target.value;
+            updateUI();
+        });
+
+        // Tab switching
+        document.getElementById('todayTab').addEventListener('click', function() {
+            activeTab = 'today';
+            document.getElementById('todayContent').classList.remove('hidden');
+            document.getElementById('historyContent').classList.add('hidden');
+            this.className = 'flex-1 py-3 px-4 text-center font-medium rounded-lg tab-active transition-all';
+            document.getElementById('historyTab').className = 'flex-1 py-3 px-4 text-center font-medium rounded-lg tab-inactive transition-all';
+        });
+
+        document.getElementById('historyTab').addEventListener('click', function() {
+            activeTab = 'history';
+            document.getElementById('todayContent').classList.add('hidden');
+            document.getElementById('historyContent').classList.remove('hidden');
+            this.className = 'flex-1 py-3 px-4 text-center font-medium rounded-lg tab-active transition-all';
+            document.getElementById('todayTab').className = 'flex-1 py-3 px-4 text-center font-medium rounded-lg tab-inactive transition-all';
+            updateHistory();
+        });
+
+        // Feeding buttons
+        document.getElementById('regular-wet-morning').addEventListener('click', () => addLog('regular', 'feeding', { foodType: 'wet', time: 'Morning' }));
+        document.getElementById('regular-wet-evening').addEventListener('click', () => addLog('regular', 'feeding', { foodType: 'wet', time: 'Evening' }));
+        document.getElementById('regular-dry-morning').addEventListener('click', () => addLog('regular', 'feeding', { foodType: 'dry', time: 'Morning' }));
+        
+        document.getElementById('sherbet-wet-morning').addEventListener('click', () => addLog('sherbet', 'feeding', { foodType: 'wet', time: 'Morning' }));
+        document.getElementById('sherbet-wet-evening').addEventListener('click', () => addLog('sherbet', 'feeding', { foodType: 'wet', time: 'Evening' }));
+        document.getElementById('sherbet-dry-morning').addEventListener('click', () => addLog('sherbet', 'feeding', { foodType: 'dry', time: 'Morning' }));
+        
+        document.getElementById('sherbet-prednisone').addEventListener('click', () => addLog('sherbet', 'medication', { medication: 'prednisone' }));
+        document.getElementById('sherbet-gabapentin').addEventListener('click', () => addLog('sherbet', 'medication', { medication: 'gabapentin' }));
+
+        // Initial UI update
+        updateUI();
+    </script>
+</body>
+</html>
